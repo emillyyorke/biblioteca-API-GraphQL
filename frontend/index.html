@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-book-open"></i> Biblioteca Online</h1>
+            <p>Explore nossa coleção de livros e adicione novos títulos</p>
+        </header>
+
+        <div class="content">
+            <aside class="sidebar">
+                <div class="search-box">
+                    <h3>Buscar Livros</h3>
+                    <input type="text" id="searchInput" placeholder="Título, autor ou gênero...">
+                    <button id="searchBtn"><i class="fas fa-search"></i> Buscar</button>
+                </div>
+
+                <div class="add-book">
+                    <h3>Adicionar Livro</h3>
+                    <form id="bookForm">
+                        <input type="text" id="titulo" placeholder="Título" required>
+                        <input type="text" id="autor" placeholder="Autor" required>
+                        <input type="text" id="genero" placeholder="Gênero" required>
+                        <input type="number" id="anoPublicacao" placeholder="Ano de Publicação">
+                        <input type="number" id="paginas" placeholder="Número de Páginas">
+                        <input type="text" id="editora" placeholder="Editora">
+                        <input type="text" id="capaUrl" placeholder="URL da Capa">
+                        <textarea id="descricao" placeholder="Descrição"></textarea>
+                        <button type="submit"><i class="fas fa-plus"></i> Adicionar Livro</button>
+                    </form>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <h2>Catálogo de Livros</h2>
+                <div class="book-grid" id="bookList">
+                    <!-- Livros serão carregados aqui via JavaScript -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
