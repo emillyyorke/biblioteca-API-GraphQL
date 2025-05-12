@@ -18,7 +18,7 @@ Navegador moderno (Chrome, Firefox, Edge)
 
 Passo 2: Configurar o Backend
 
--Acesse a pasta do backend: cd backend 
+-Acesse a pasta do backend: cd backend / npm init -y
 
 -Instale as dependências: npm install ou npm install apollo-server-express cors express graphql mongoose
 
