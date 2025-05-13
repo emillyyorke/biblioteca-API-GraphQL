@@ -20,8 +20,6 @@ Passo 2: Configurar o Backend
 
 -Acesse a pasta do backend: cd backend / npm init -y
 
--Instale as dependências: npm install ou npm install apollo-server-express cors express graphql mongoose
-
 -Inicie o servidor: node server.js
 
 Passo 3: Iniciar o frontend
