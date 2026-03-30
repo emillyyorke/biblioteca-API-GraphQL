@@ -1,34 +1,41 @@
-📚 Biblioteca Online 
+# 📚 Biblioteca Online - Sistema Full-Stack
 
-🛠 Pré-requisitos
-Antes de começar, certifique-se de ter instalado:
+Um sistema moderno de gerenciamento de livros que utiliza **GraphQL** para a comunicação entre o cliente e o servidor. A aplicação permite catalogar livros, realizar buscas inteligentes e gerenciar o acervo em tempo real.
 
-Node.js (versão 18 ou superior)
+---
 
-MongoDB (local ou Atlas)
+## 🛠️ Tecnologias Utilizadas
 
-Git (para clonar o repositório)
+### **Back-end (API)**
+* **Node.js & Express**: Base do servidor web.
+* **Apollo Server Express**: Implementação do servidor GraphQL.
+* **Mongoose & MongoDB**: Modelagem de dados e banco de dados NoSQL.
+* **GraphQL**: Linguagem de consulta para APIs.
 
-Navegador moderno (Chrome, Firefox, Edge)
+### **Front-end**
+* **HTML5 & CSS3**: Estrutura e estilização moderna com Flexbox e Grid.
+* **JavaScript (Vanilla)**: Lógica de consumo da API usando `fetch` e manipulação do DOM.
+* **Font Awesome**: Ícones vetoriais.
+* **Google Fonts (Montserrat)**: Tipografia refinada.
 
-📥 Passo 1: Clonar o Repositório
--Abra o terminal (CMD, PowerShell ou terminal do seu sistema operacional)
+---
 
--Execute o comando para clonar o repositório: git clone https://github.com/emillyyorke/biblioteca-API-GraphQL.git
+## 📋 Funcionalidades
 
-Passo 2: Configurar o Backend
+- **Catálogo Dinâmico**: Visualização de todos os livros cadastrados com capas e descrições.
+- **Busca Global**: Pesquisa por título, autor ou gênero.
+- **Gestão de Acervo**: Adição de novos títulos e remoção de livros existentes via Mutations.
+- **Interface Responsiva**: Design adaptável para dispositivos móveis e desktop.
 
--Acesse a pasta do backend: cd backend / npm init -y
+---
 
--Inicie o servidor: node server.js
+## 🚀 Como Executar o Projeto
 
-Passo 3: Iniciar o frontend
+### **Pré-requisitos**
+- Node.js instalado.
+- MongoDB instalado localmente e rodando na porta padrão (`27017`).
 
--Abrir o projeto diretamente no navegador o arquivo index.html
-
-Passo 4: Testar o backend 
-
--Acesse http://localhost:4000/graphql
-
--Testar as querys no Playground
-
+### **1. Configuração do Back-end**
+Navegue até a pasta do servidor e instale as dependências:
+```bash
+npm install
