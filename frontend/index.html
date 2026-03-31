@@ -3,50 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca Online</title>
+    <title>Biblioteca · GraphQL</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-book-open"></i> Biblioteca Online</h1>
-            <p>Explore sua coleção de livros e adicione novos títulos</p>
-        </header>
 
-        <div class="content">
-            <aside class="sidebar">
-                <div class="search-box">
-                    <h3>Buscar Livros</h3>
-                    <input type="text" id="searchInput" placeholder="Título, autor ou gênero...">
-                    <button id="searchBtn"><i class="fas fa-search"></i> Buscar</button>
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon">📚</span>
+                Biblioteca
+            </a>
+            <div class="nav-stats">
+                <div class="stat-pill">
+                    <span class="stat-number" id="totalBooks">0</span>
+                    <span class="stat-label">livros</span>
                 </div>
+                <div class="stat-pill available">
+                    <span class="stat-number" id="availableBooks">0</span>
+                    <span class="stat-label">disponíveis</span>
+                </div>
+            </div>
+            <button class="btn-add-nav" id="openAddBtn">
+                <span>+</span> Novo Livro
+            </button>
+        </div>
+    </nav>
 
-                <div class="add-book">
-                    <h3>Adicionar Livro</h3>
-                    <form id="bookForm">
-                        <input type="text" id="titulo" placeholder="Título" required>
-                        <input type="text" id="autor" placeholder="Autor" required>
-                        <input type="text" id="genero" placeholder="Gênero" required>
-                        <input type="number" id="anoPublicacao" placeholder="Ano de Publicação">
-                        <input type="number" id="paginas" placeholder="Número de Páginas">
-                        <input type="text" id="editora" placeholder="Editora">
-                        <input type="text" id="capaUrl" placeholder="URL da Capa">
-                        <textarea id="descricao" placeholder="Descrição"></textarea>
-                        <button type="submit"><i class="fas fa-plus"></i> Adicionar Livro</button>
-                    </form>
-                </div>
-            </aside>
+    <!-- ── MAIN ── -->
+    <main class="main">
+        <!-- Search bar -->
+        <div class="search-section">
+            <div class="search-bar">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Buscar por título, autor ou gênero...">
+                <button class="search-clear" id="clearSearch" title="Limpar">✕</button>
+            </div>
+            <div class="filter-chips" id="filterChips">
+                <button class="chip active" data-filter="all">Todos</button>
+                <button class="chip" data-filter="available">Disponíveis</button>
+                <button class="chip" data-filter="unavailable">Indisponíveis</button>
+            </div>
+        </div>
 
-            <main class="main-content">
-                <h2>Catálogo de Livros</h2>
-                <div class="book-grid" id="bookList">
-                    <!-- Livros serão carregados aqui via JavaScript -->
+        <!-- Book grid -->
+        <div class="book-grid" id="bookList">
+            <!-- Loading skeleton -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <div class="empty-icon">📖</div>
+            <h3>Nenhum livro encontrado</h3>
+            <p>Adicione seu primeiro livro clicando no botão acima!</p>
+        </div>
+    </main>
+
+    <!-- ── MODAL: ADD/EDIT BOOK ── -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Livro</h2>
+                <button class="modal-close" id="closeModal">✕</button>
+            </div>
+            <form id="bookForm" class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="titulo">Título *</label>
+                        <input type="text" id="titulo" placeholder="Ex: Dom Casmurro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="autor">Autor *</label>
+                        <input type="text" id="autor" placeholder="Ex: Machado de Assis" required>
+                    </div>
                 </div>
-            </main>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="genero">Gênero *</label>
+                        <input type="text" id="genero" placeholder="Ex: Romance" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="anoPublicacao">Ano</label>
+                        <input type="number" id="anoPublicacao" placeholder="Ex: 1899">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="paginas">Páginas</label>
+                        <input type="number" id="paginas" placeholder="Ex: 256">
+                    </div>
+                    <div class="form-group">
+                        <label for="editora">Editora</label>
+                        <input type="text" id="editora" placeholder="Ex: Companhia das Letras">
+                    </div>
+                </div>
+                <div class="form-group full">
+                    <label for="capaUrl">URL da Capa</label>
+                    <input type="text" id="capaUrl" placeholder="https://...">
+                </div>
+                <div class="form-group full">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" rows="3" placeholder="Breve descrição do livro..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="cancelModal">Cancelar</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="btn-text">Adicionar Livro</span>
+                        <span class="btn-loading" style="display:none;">Salvando...</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
+    <!-- ── TOAST CONTAINER ── -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script src="script.js"></script>
 </body>
