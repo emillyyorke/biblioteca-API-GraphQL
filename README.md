@@ -91,7 +91,7 @@ git add .
 git commit -m "Projeto Biblioteca Full-Stack Finalizado"
 
 # Conecta ao seu repositório remoto
-git remote add origin [https://github.com/emillyyorke/NOME_DO_REPOSITORIO.git](https://github.com/emillyyorke/biblioteca-API-GraphQL.git)
+git remote add origin [https://github.com/emillyyorke/biblioteca-API-GraphQL.git](https://github.com/emillyyorke/biblioteca-API-GraphQL.git)
 git branch -M main
 git push -u origin main
 ```
