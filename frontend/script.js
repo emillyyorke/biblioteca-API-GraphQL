@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:4000/graphql';
 let allBooks = [];
 let currentFilter = 'all';
 
-// ── GraphQL fetch wrapper with error handling ──
+// ── GraphQL fetch wrapper ──
 async function fetchGraphQL(query, variables = {}) {
     try {
         const response = await fetch(API_URL, {
@@ -14,15 +14,9 @@ async function fetchGraphQL(query, variables = {}) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query, variables })
         });
-
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
         const result = await response.json();
-
-        if (result.errors) {
-            throw new Error(result.errors[0].message);
-        }
-
+        if (result.errors) throw new Error(result.errors[0].message);
         return result;
     } catch (err) {
         if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
@@ -44,7 +38,6 @@ async function loadBooks() {
             }
         }
     `;
-
     try {
         const { data } = await fetchGraphQL(query);
         allBooks = data.livros;
@@ -52,12 +45,11 @@ async function loadBooks() {
         updateStats();
     } catch {
         document.getElementById('bookList').innerHTML = `
-            <div style="grid-column: 1/-1; text-align:center; padding:40px; color: var(--text-muted);">
+            <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">
                 <div style="font-size:2.5rem; margin-bottom:12px;">⚠️</div>
                 <p style="font-weight:600;">Não foi possível conectar ao servidor</p>
                 <p style="font-size:0.85rem; margin-top:6px;">Certifique-se de que o backend está rodando em <code>localhost:4000</code></p>
-            </div>
-        `;
+            </div>`;
     }
 }
 
@@ -65,11 +57,7 @@ async function loadBooks() {
 async function searchBooks() {
     const term = document.getElementById('searchInput').value.trim();
     document.getElementById('clearSearch').classList.toggle('visible', term.length > 0);
-
-    if (!term) {
-        applyFilters();
-        return;
-    }
+    if (!term) { applyFilters(); return; }
 
     const query = `
         query BuscarLivros($termo: String!) {
@@ -78,16 +66,15 @@ async function searchBooks() {
             buscarPorGenero(genero: $termo)  { id titulo autor genero capaUrl disponivel anoPublicacao paginas editora descricao }
         }
     `;
-
     try {
         const { data } = await fetchGraphQL(query, { termo: term });
         const all = [...data.buscarPorTitulo, ...data.buscarPorAutor, ...data.buscarPorGenero];
         const unique = [...new Map(all.map(b => [b.id, b])).values()];
         displayBooks(unique);
-    } catch { /* handled in fetchGraphQL */ }
+    } catch { /* handled */ }
 }
 
-// ── Add book ──
+// ── Add / Edit book ──
 async function addBook(event) {
     event.preventDefault();
     const btn = document.getElementById('submitBtn');
@@ -100,23 +87,18 @@ async function addBook(event) {
 
     try {
         if (editId) {
-            const mutation = `
+            await fetchGraphQL(`
                 mutation AtualizarLivro($id: ID!, $input: LivroInput!) {
-                    atualizarLivro(id: $id, input: $input) { id titulo }
-                }
-            `;
-            await fetchGraphQL(mutation, { id: editId, input });
+                    atualizarLivro(id: $id, input: $input) { id }
+                }`, { id: editId, input });
             showToast('Livro atualizado com sucesso!', 'success');
         } else {
-            const mutation = `
+            await fetchGraphQL(`
                 mutation AdicionarLivro($input: LivroInput!) {
-                    adicionarLivro(input: $input) { id titulo }
-                }
-            `;
-            await fetchGraphQL(mutation, { input });
+                    adicionarLivro(input: $input) { id }
+                }`, { input });
             showToast('Livro adicionado com sucesso!', 'success');
         }
-
         closeModal();
         document.getElementById('bookForm').reset();
         document.getElementById('editId').value = '';
@@ -131,13 +113,8 @@ async function addBook(event) {
 // ── Remove book ──
 async function removeBook(id) {
     if (!confirm('Tem certeza que deseja remover este livro?')) return;
-
-    const mutation = `
-        mutation RemoverLivro($id: ID!) { removerLivro(id: $id) }
-    `;
-
     try {
-        await fetchGraphQL(mutation, { id });
+        await fetchGraphQL(`mutation($id: ID!) { removerLivro(id: $id) }`, { id });
         showToast('Livro removido.', 'info');
         await loadBooks();
     } catch { /* handled */ }
@@ -147,28 +124,18 @@ async function removeBook(id) {
 async function toggleAvailability(id, currentStatus) {
     const book = allBooks.find(b => b.id === id);
     if (!book) return;
-
     const input = {
-        titulo: book.titulo,
-        autor: book.autor,
-        genero: book.genero,
-        anoPublicacao: book.anoPublicacao,
-        paginas: book.paginas,
-        editora: book.editora || '',
-        descricao: book.descricao || '',
-        capaUrl: book.capaUrl || '',
-        disponivel: !currentStatus
+        titulo: book.titulo, autor: book.autor, genero: book.genero,
+        anoPublicacao: book.anoPublicacao, paginas: book.paginas,
+        editora: book.editora || '', descricao: book.descricao || '',
+        capaUrl: book.capaUrl || '', disponivel: !currentStatus
     };
-
-    const mutation = `
-        mutation AtualizarLivro($id: ID!, $input: LivroInput!) {
-            atualizarLivro(id: $id, input: $input) { id disponivel }
-        }
-    `;
-
     try {
-        await fetchGraphQL(mutation, { id, input });
-        showToast(!currentStatus ? 'Livro marcado como disponível' : 'Livro marcado como indisponível', 'success');
+        await fetchGraphQL(`
+            mutation($id: ID!, $input: LivroInput!) {
+                atualizarLivro(id: $id, input: $input) { id disponivel }
+            }`, { id, input });
+        showToast(!currentStatus ? 'Livro disponível' : 'Livro indisponível', 'success');
         await loadBooks();
     } catch { /* handled */ }
 }
@@ -177,7 +144,6 @@ async function toggleAvailability(id, currentStatus) {
 function editBook(id) {
     const book = allBooks.find(b => b.id === id);
     if (!book) return;
-
     document.getElementById('editId').value = book.id;
     document.getElementById('titulo').value = book.titulo;
     document.getElementById('autor').value = book.autor;
@@ -187,7 +153,6 @@ function editBook(id) {
     document.getElementById('editora').value = book.editora || '';
     document.getElementById('descricao').value = book.descricao || '';
     document.getElementById('capaUrl').value = book.capaUrl || '';
-
     document.getElementById('modalTitle').textContent = 'Editar Livro';
     document.getElementById('submitBtn').querySelector('.btn-text').textContent = 'Salvar Alterações';
     openModal();
@@ -197,21 +162,16 @@ function editBook(id) {
 function displayBooks(livros) {
     const list = document.getElementById('bookList');
     const empty = document.getElementById('emptyState');
-
     if (!livros || livros.length === 0) {
         list.innerHTML = '';
         empty.style.display = 'block';
         return;
     }
-
     empty.style.display = 'none';
     list.innerHTML = livros.map(livro => `
         <div class="book-card">
             <div class="book-cover">
-                ${livro.capaUrl
-                    ? `<img src="${livro.capaUrl}" alt="${livro.titulo}" onerror="this.style.display='none'">`
-                    : ''
-                }
+                ${livro.capaUrl ? `<img src="${livro.capaUrl}" alt="${livro.titulo}" onerror="this.style.display='none'">` : ''}
                 <div class="cover-placeholder">
                     <span class="cover-emoji">📖</span>
                 </div>
@@ -241,14 +201,13 @@ function displayBooks(livros) {
     `).join('');
 }
 
-// ── Filter logic ──
+// ── Filters ──
 function applyFilters() {
     let filtered = [...allBooks];
     if (currentFilter === 'available') filtered = filtered.filter(b => b.disponivel !== false);
     if (currentFilter === 'unavailable') filtered = filtered.filter(b => b.disponivel === false);
     displayBooks(filtered);
 }
-
 function updateStats() {
     document.getElementById('totalBooks').textContent = allBooks.length;
     document.getElementById('availableBooks').textContent = allBooks.filter(b => b.disponivel !== false).length;
@@ -273,7 +232,6 @@ function openModal() {
     document.getElementById('modalOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
-
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
     document.body.style.overflow = '';
@@ -283,16 +241,14 @@ function closeModal() {
     document.getElementById('submitBtn').querySelector('.btn-text').textContent = 'Adicionar Livro';
 }
 
-// ── Toast notifications ──
+// ── Toasts ──
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`;
     container.appendChild(toast);
-
     setTimeout(() => {
         toast.classList.add('fade-out');
         setTimeout(() => toast.remove(), 300);
@@ -309,7 +265,6 @@ document.getElementById('modalOverlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeModal();
 });
 
-// Search
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
     clearTimeout(searchTimeout);
@@ -321,7 +276,6 @@ document.getElementById('clearSearch').addEventListener('click', () => {
     applyFilters();
 });
 
-// Filter chips
 document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
         document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -331,12 +285,8 @@ document.querySelectorAll('.chip').forEach(chip => {
     });
 });
 
-// Escape to close modal
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-// Global scope
 window.removeBook = removeBook;
 window.editBook = editBook;
 window.toggleAvailability = toggleAvailability;
